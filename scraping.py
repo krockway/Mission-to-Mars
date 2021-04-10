@@ -110,39 +110,42 @@ def hemispheres(browser):
     # Create a list to hold the images and titles.
     hemisphere_image_urls = []
 
-    for i in range(4,12,2):
+    for i in range(4):
 
         #Create an empty dictionary to store info
         hemispheres = {}
 
         #Open the hemisphere page
-        full_image_page = browser.find_by_tag('a')[i]
+        full_image_page = browser.find_by_css('a.product-item img')[i]
         full_image_page.click()
+
+        html = browser.html
+        img_soup = soup(html, 'html.parser')
 
         try:
             #Get image relative path
-            html = browser.html
-            img_soup = soup(html, 'html.parser')
-            img_url_rel = img_soup.find('img', class_='wide-image').get('src')
-            img_url = f'https://data-class-jpl-space.s3.amazonaws.com/JPL_Space/{img_url_rel}'
+            img_url_rel = img_soup.find('a', text='Sample').get('href')
+            img_url = f'https://data-class-mars-hemispheres.s3.amazonaws.com/Mars_Hemispheres/{img_url_rel}'
 
             #Get image title
             img_title = img_soup.select_one('h2.title').get_text()
             
-            #Add details to dictionary
-            hemispheres = {
-                "img_url": img_url, 
-                "title": img_title}
-            
-            #Append the list with the dictionary
-            hemisphere_image_urls.append(hemispheres)
-            
-            #Return to index page
-            return_to_index = browser.back()
         except AttributeError:
             return None
         
-        return hemisphere_image_urls
+        #Add details to dictionary
+        hemispheres = {
+            "img_url": img_url, 
+            "title": img_title}
+        
+        #Append the list with the dictionary
+        hemisphere_image_urls.append(hemispheres)
+        
+        #Return to index page
+        browser.back()
+        
+    return hemisphere_image_urls
+    print(len(hemisphere_image_urls))
 
     # If running as script, print scraped data
     print(scrape_all())
